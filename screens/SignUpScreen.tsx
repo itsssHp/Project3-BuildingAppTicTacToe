@@ -1,46 +1,32 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from 'react-native';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import { useNavigation } from '@react-navigation/native';
 
-export default function SignUpScreen() {
+export default function SignInScreen() {
   const navigation = useNavigation<any>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
 
-  const handleSignUp = async () => {
-    if (password !== confirmPassword) {
-      Alert.alert('Passwords do not match');
-      return;
-    }
-
+  const handleSignIn = async () => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(auth, email, password);
       navigation.replace('HomeScreen');
-    } catch (error: any) {
-      Alert.alert('Error', error.message);
+    } catch (err: any) {
+      setError(err.message);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Sign Up</Text>
-
+      <Text style={styles.heading}>Sign In</Text>
       <TextInput
         style={styles.input}
         placeholder="Email"
         onChangeText={setEmail}
         autoCapitalize="none"
-        keyboardType="email-address"
       />
       <TextInput
         style={styles.input}
@@ -48,21 +34,14 @@ export default function SignUpScreen() {
         onChangeText={setPassword}
         secureTextEntry
       />
-      <TextInput
-        style={styles.input}
-        placeholder="Confirm Password"
-        onChangeText={setConfirmPassword}
-        secureTextEntry
-      />
-
-      <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-        <Text style={styles.buttonText}>Sign Up</Text>
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+      <TouchableOpacity style={styles.button} onPress={handleSignIn}>
+        <Text style={styles.buttonText}>Sign In</Text>
       </TouchableOpacity>
-
       <Text style={styles.switchText}>
-        Already have an account?{' '}
-        <Text style={styles.link} onPress={() => navigation.navigate('SignInScreen')}>
-          Sign In
+        Don't have an account?{' '}
+        <Text style={styles.link} onPress={() => navigation.navigate('SignUpScreen')}>
+          Sign Up
         </Text>
       </Text>
     </View>
@@ -109,5 +88,10 @@ const styles = StyleSheet.create({
   link: {
     color: '#4a90e2',
     fontWeight: '600',
+  },
+  error: {
+    color: 'red',
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });
